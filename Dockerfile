@@ -27,4 +27,3 @@ RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'extras;android;m2repository'
 RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'extras;google;google_play_services'
 RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'extras;google;m2repository'
 RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'cmake;'$ANDROID_CMAKE_REV
-RUN chmod +x ./gradlew
