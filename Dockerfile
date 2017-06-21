@@ -44,7 +44,7 @@ ENV ANDROID_CMAKE_REV "3.6.3155560"
 ENV GIT_SUBMODULE_STRATEGY recursive # Remove if you don't have to clone submodules
 
 #SDK Manager Configs
-mkdir $HOME/.android
+RUN mkdir $HOME/.android
 
 #Avoid Warning
 RUN echo 'count=0' > $HOME/.android/repositories.cfg
@@ -64,4 +64,4 @@ RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'extras;android;m2repository'
 RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'extras;google;google_play_services'
 RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'extras;google;m2repository'
 RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'cmake;'$ANDROID_CMAKE_REV
-
+RUN chmod +x ./gradlew
