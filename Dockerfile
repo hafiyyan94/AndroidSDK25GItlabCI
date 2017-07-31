@@ -1,45 +1,63 @@
-# Pull base image.
-FROM openjdk:8-jdk
-# original maintainer: navarroaxel <navarroaxel@gmail.com>
-MAINTAINER hafiyyan94 <hafiyyan94@gmail.com>
+FROM ubuntu:16.04
+MAINTAINER Hafiyyan <hafiyyan94@gmail.com>
 
-# Creating Variable for Android Package
-ENV ANDROID_COMPILE_SDK "25"
-ENV ANDROID_BUILD_TOOLS "25.0.3"
-ENV ANDROID_SDK_TOOLS "3859397"  # "26.0.1"
-ENV ANDROID_CMAKE_REV "3.6.3155560"
-ENV GIT_SUBMODULE_STRATEGY recursive # Remove if you don't have to clone submodules
-ENV SDK_HOME /usr/local
+ENV VERSION_SDK_TOOLS "26.0.1"
+ENV VERSION_BUILD_TOOLS "25.0.3"
+ENV VERSION_TARGET_SDK "25"
 
-#Gradle Installation
-ENV GRADLE_VERSION 3.3
-ENV GRADLE_SDK_URL https://services.gradle.org/distributions/gradle-${GRADLE_VERSION}-bin.zip
-RUN curl -sSL "${GRADLE_SDK_URL}" -o gradle-${GRADLE_VERSION}-bin.zip  \
-	&& unzip gradle-${GRADLE_VERSION}-bin.zip -d ${SDK_HOME}  \
-	&& rm -rf gradle-${GRADLE_VERSION}-bin.zip
-ENV GRADLE_HOME ${SDK_HOME}/gradle-${GRADLE_VERSION}
-ENV PATH ${GRADLE_HOME}/bin:$PATH
+ENV SDK_PACKAGES "build-tools-${VERSION_BUILD_TOOLS},android-${VERSION_TARGET_SDK},addon-google_apis-google-${VERSION_TARGET_SDK},platform-tools,extra-android-m2repository,extra-android-support,extra-google-google_play_services,extra-google-m2repository,sys-img-x86-android-${VERSION_TARGET_SDK},sys-img-x86-google_apis-${VERSION_TARGET_SDK}"
 
+ENV ANDROID_HOME "/sdk"
+ENV PATH "$PATH:${ANDROID_HOME}/tools"
+ENV DEBIAN_FRONTEND noninteractive
 
-#Installing Android Dependencies
-RUN mkdir $HOME/.android # For sdkmanager configs
-RUN echo 'count=0' > $HOME/.android/repositories.cfg # Avoid warning
-RUN wget --output-document=android-sdk.zip https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip
-RUN mkdir $SDK_HOME/android-sdk-linux
-RUN unzip -qq android-sdk.zip -d $SDK_HOME/android-sdk-linux
-ENV ANDROID_HOME $SDK_HOME/android-sdk-linux
-RUN export PATH=$PATH:$ANDROID_HOME/platform-tools/:$ANDROID_NDK_HOME
-RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager --update 
-RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'tools'
-RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'platform-tools'
-RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'build-tools;'$ANDROID_BUILD_TOOLS
-RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'platforms;android-'$ANDROID_COMPILE_SDK
-RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'extras;android;m2repository'
-RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'extras;google;google_play_services'
-RUN echo y | $ANDROID_HOME/tools/bin/sdkmanager 'extras;google;m2repository'
+# Accept License
 
-#Installing Android CMake
-RUN wget -q https://dl.google.com/android/repository/cmake-$ANDROID_CMAKE_REV-linux-x86_64.zip -O android-cmake.zip
-RUN unzip -q android-cmake.zip -d ${ANDROID_HOME}/cmake
-ENV PATH ${PATH}:${ANDROID_HOME}/cmake/bin
-RUN chmod u+x ${ANDROID_HOME}/cmake/bin/ -R
+# Constraint Layout / [Solver for ConstraintLayout 1.0.0-alpha8, ConstraintLayout for Android 1.0.0-alpha8]
+RUN mkdir -p $ANDROID_HOME/licenses/
+RUN echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_HOME/licenses/android-sdk-license
+RUN apt-get -y update && apt-get -y upgrade && apt-get -qq update && \
+    apt-get install -qqy --no-install-recommends \
+      curl \
+      html2text \
+      openjdk-8-jdk \
+      libc6-i386 \
+      lib32stdc++6 \
+      lib32gcc1 \
+      lib32ncurses5 \
+      lib32z1 \
+      unzip \
+      qtbase5-dev \
+      qtdeclarative5-dev \
+      wget \
+      qemu-kvm \
+      build-essential \
+      python2.7 libvirt-bin ubuntu-vm-builder bridge-utils \
+      python2.7-dev \
+      yamdi \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN rm -f /etc/ssl/certs/java/cacerts; \
+    /var/lib/dpkg/info/ca-certificates-java.postinst configure
+
+ENV ANDROID_SDK_TOOLS "3859397"
+
+RUN wget -nv http://dl.google.com/android/repository/sdk-tools-linux-${ANDROID_SDK_TOOLS}.zip && unzip sdk-tools-linux-${ANDROID_SDK_TOOLS}.zip -d /sdk && \
+    rm -v sdk-tools-linux-${ANDROID_SDK_TOOLS}.zip
+
+RUN mkdir /sdk/tools/keymaps && \
+    touch /sdk/tools/keymaps/en-us
+
+RUN mkdir /helpers
+
+COPY wait-for-avd-boot.sh /helpers
+
+RUN mkdir /.android && echo 'count=0' > /.android/repositories.cfg # Avoid warning
+RUN echo y | ${ANDROID_HOME}/tools/bin/sdkmanager --update
+RUN (while [ 1 ]; do sleep 5; echo y; done) | ${ANDROID_HOME}/tools/bin/sdkmanager "tools" "platform-tools" "build-tools;"$VERSION_BUILD_TOOLS "platforms;android-"$VERSION_TARGET_SDK "extras;android;m2repository" "extras;google;google_play_services" "extras;google;m2repository"
+
+RUN apt-get -y install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+
+#Creating and Running Emulator
+RUN echo y | ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-24;default;armeabi-v7a"
+RUN echo no | $ANDROID_HOME/tools/bin/avdmanager create avd -n test -k "system-images;android-24;default;armeabi-v7a"
