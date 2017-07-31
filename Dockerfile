@@ -5,8 +5,6 @@ ENV VERSION_SDK_TOOLS "26.0.1"
 ENV VERSION_BUILD_TOOLS "25.0.3"
 ENV VERSION_TARGET_SDK "25"
 
-ENV SDK_PACKAGES "build-tools-${VERSION_BUILD_TOOLS},android-${VERSION_TARGET_SDK},addon-google_apis-google-${VERSION_TARGET_SDK},platform-tools,extra-android-m2repository,extra-android-support,extra-google-google_play_services,extra-google-m2repository,sys-img-x86-android-${VERSION_TARGET_SDK},sys-img-x86-google_apis-${VERSION_TARGET_SDK}"
-
 ENV ANDROID_HOME "/sdk"
 ENV PATH "$PATH:${ANDROID_HOME}/tools"
 ENV DEBIAN_FRONTEND noninteractive
@@ -56,8 +54,5 @@ RUN mkdir /.android && echo 'count=0' > /.android/repositories.cfg # Avoid warni
 RUN echo y | ${ANDROID_HOME}/tools/bin/sdkmanager --update
 RUN (while [ 1 ]; do sleep 5; echo y; done) | ${ANDROID_HOME}/tools/bin/sdkmanager "tools" "platform-tools" "build-tools;"$VERSION_BUILD_TOOLS "platforms;android-"$VERSION_TARGET_SDK "extras;android;m2repository" "extras;google;google_play_services" "extras;google;m2repository"
 
-RUN apt-get -y install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
-
 #Creating and Running Emulator
 RUN echo y | ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-24;default;armeabi-v7a"
-RUN echo no | $ANDROID_HOME/tools/bin/avdmanager create avd -n test -k "system-images;android-24;default;armeabi-v7a"
