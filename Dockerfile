@@ -8,6 +8,8 @@ ENV VERSION_TARGET_SDK "25"
 ENV ANDROID_HOME "/sdk"
 ENV PATH "$PATH:${ANDROID_HOME}/tools"
 ENV DEBIAN_FRONTEND noninteractive
+ENV PATH /usr/local/bin:$PATH
+ENV LANG C.UTF-8
 
 # Accept License
 
@@ -53,8 +55,11 @@ RUN mkdir /.android && echo 'count=0' > /.android/repositories.cfg # Avoid warni
 RUN echo y | ${ANDROID_HOME}/tools/bin/sdkmanager --update
 RUN (while [ 1 ]; do sleep 5; echo y; done) | ${ANDROID_HOME}/tools/bin/sdkmanager "tools" "platform-tools" "build-tools;"$VERSION_BUILD_TOOLS "platforms;android-"$VERSION_TARGET_SDK "extras;android;m2repository" "extras;google;google_play_services" "extras;google;m2repository"
 
-ENV GPG_KEY 97FC712E4C024BBEA48A61ED3A5CA953F73C700D
-ENV PYTHON_VERSION 3.4.6
+#Creating and Running Emulator
+RUN echo y | ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-24;default;armeabi-v7a"
+
+ENV GPG_KEY 0D96DF4D4110E5C43FBFB17F2D347EA6AA65421D
+ENV PYTHON_VERSION 3.6.0
 
 # if this is called "PIP_VERSION", pip explodes with "ValueError: invalid truth value '<VERSION>'"
 ENV PYTHON_PIP_VERSION 9.0.1
@@ -116,6 +121,3 @@ RUN cd /usr/local/bin \
 	&& ln -s python3-config python-config
 
 CMD ["python3"]
-
-#Creating and Running Emulator
-RUN echo y | ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-24;default;armeabi-v7a"
