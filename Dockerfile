@@ -31,7 +31,7 @@ RUN apt-get -y update && apt-get -y upgrade && apt-get -qq update && \
       qemu-kvm \
       build-essential \
       libvirt-bin ubuntu-vm-builder bridge-utils \
-      yamdi tcl tk
+      yamdi tcl tk \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN rm -f /etc/ssl/certs/java/cacerts; \
