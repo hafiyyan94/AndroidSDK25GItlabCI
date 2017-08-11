@@ -60,6 +60,6 @@ RUN (while [ 1 ]; do sleep 5; echo y; done) | ${ANDROID_HOME}/tools/bin/sdkmanag
 #Creating and Running Emulator
 RUN echo y | ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-24;default;armeabi-v7a"
 
-RUN wget get-pip.py && python3 get-pip.py
+RUN wget https://bootstrap.pypa.io/get-pip.py && python3 get-pip.py
 
 CMD ["python3"]
