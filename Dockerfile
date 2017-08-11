@@ -17,7 +17,8 @@ ENV LANG C.UTF-8
 RUN mkdir -p $ANDROID_HOME/licenses/
 RUN apt-get -y update && apt-get -y upgrade && apt-get -y install software-properties-common
 RUN echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $ANDROID_HOME/licenses/android-sdk-license
-RUN apt-get -y update && apt-get -y upgrade && apt-get -qq update && \
+RUN apt-get -y update && apt-get -y upgrade && apt-get -y install software-properties-common
+RUN add-apt-repository ppa:jonathonf/python-3.6 && apt-get -y update && apt-get -y upgrade && apt-get -qq update && \
     apt-get install -qqy --no-install-recommends \
       curl \
       html2text \
@@ -58,6 +59,7 @@ RUN (while [ 1 ]; do sleep 5; echo y; done) | ${ANDROID_HOME}/tools/bin/sdkmanag
 
 #Creating and Running Emulator
 RUN echo y | ${ANDROID_HOME}/tools/bin/sdkmanager "system-images;android-24;default;armeabi-v7a"
+
 RUN wget get-pip.py && python3 get-pip.py
 
 CMD ["python3"]
